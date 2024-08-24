@@ -1,9 +1,53 @@
 import re
 import instaloader
+from PIL import Image
+import time  # Add this import at the beginning
+from io import BytesIO
+import requests
 
-def download_instagram_vedio(url):
+# def download_instagram_video(url):
+#     # Create an instance of Instaloader
+#     loader = instaloader.Instaloader()
+
+#     # Extract shortcode from the URL
+#     shortcode = url.split("/")[-2]
+
+#     print("shortcode:", shortcode)
+
+#     # Download the video using the shortcode
+#     try:
+#         post = instaloader.Post.from_shortcode(loader.context, shortcode)
+        
+#         # Check if the post is a video
+#         if post.is_video:
+#             video_url = post.video_url
+            
+#             # Fetch the video from the URL
+#             response = requests.get(video_url)
+#             video_io = BytesIO(response.content)
+#             return video_io, f"{shortcode}_video.mp4"
+#         else:
+#             print("The post is not a video.")
+#             return None, None
+#     except Exception as e:
+#         print(f"Error downloading video: {e}")
+#         return None, None
+
+
+import instaloader
+import requests
+from io import BytesIO
+
+def download_instagram_video(url, ig_username, ig_password):
     # Create an instance of Instaloader
     loader = instaloader.Instaloader()
+
+    # Login to Instagram
+    try:
+        loader.login(ig_username, ig_password)
+    except Exception as e:
+        print(f"Login failed: {e}")
+        return None, None
 
     # Extract shortcode from the URL
     shortcode = url.split("/")[-2]
@@ -17,67 +61,161 @@ def download_instagram_vedio(url):
         # Check if the post is a video
         if post.is_video:
             video_url = post.video_url
-            loader.download_pic(filename=f"{shortcode}_video.mp4", url=video_url, mtime=None)
-            print(f"Video downloaded successfully as {shortcode}_video.mp4")
+            
+            # Fetch the video from the URL
+            response = requests.get(video_url)
+            video_io = BytesIO(response.content)
+            return video_io, f"{shortcode}_video.mp4"
         else:
             print("The post is not a video.")
+            return None, None
     except Exception as e:
         print(f"Error downloading video: {e}")
+        return None, None
 
 
-def download_instagram_post(url):
-    # Create an instance of Instaloader
+
+def download_instagram_post(url, username, password):
+    # Create an instance of Instaloader and log in
     loader = instaloader.Instaloader()
 
-    # Extract shortcode from the URL
-    shortcode = url.split("/")[-2]
-
-    print("shortcode:", shortcode)
-
-    # Download the thumbnail using the shortcode
     try:
-        post = instaloader.Post.from_shortcode(loader.context, shortcode)
-        
-        # Download the thumbnail
+        loader.login(username, password)
+
+        # Extract shortcode from the URL
+        shortcode = url.split("/")[-2]
+        print("shortcode:", shortcode)
+
+        # Retry logic in case of rate limiting
+        for _ in range(3):  # Retry up to 3 times
+            try:
+                post = instaloader.Post.from_shortcode(loader.context, shortcode)
+                break  # Exit loop if successful
+            except Exception as e:
+                if "Please wait a few minutes" in str(e):
+                    print("Rate limited. Waiting before retrying...")
+                    time.sleep(60)  # Wait for 60 seconds before retrying
+                else:
+                    raise e
+
+        # Get the thumbnail URL
         thumbnail_url = post.url
-        loader.download_pic(filename=f"{shortcode}_thumbnail.jpg", url=thumbnail_url, mtime=None)
-        
-        print(f"Thumbnail downloaded successfully as {shortcode}_thumbnail.jpg")
+
+        # Fetch the image from the URL
+        response = requests.get(thumbnail_url)
+        image = Image.open(BytesIO(response.content))
+
+        # Convert image to BytesIO
+        img_io = BytesIO()
+        image.save(img_io, format='JPEG')
+        img_io.seek(0)
+
+        return img_io, f"{shortcode}_thumbnail.jpg"
+
     except Exception as e:
         print(f"Error downloading thumbnail: {e}")
+        return None, None
 
 
-def download_instagram_story(story_url, ig_username, ig_password):
+# import instaloader
+# import requests
+# from io import BytesIO
+# from urllib.parse import urlparse, parse_qs
+
+# def download_instagram_story(url, ig_username, ig_password):
+#     # Create an instance of Instaloader
+#     loader = instaloader.Instaloader()
+
+#     # Login to Instagram
+#     try:
+#         loader.login(ig_username, ig_password)
+#     except Exception as e:
+#         print(f"Login failed: {e}")
+#         return None, None
+
+#     try:
+#         # Extract the shortcode from the URL
+#         parsed_url = urlparse(url)
+#         path_parts = parsed_url.path.strip('/').split('/')
+#         if len(path_parts) >= 2 and path_parts[0] == "stories":
+#             username = path_parts[1]
+#             story_id = path_parts[2]
+#             print(f"Extracted username: {username}, story ID: {story_id}")
+#         else:
+#             print("Invalid URL structure. Could not extract username and story ID.")
+#             return None, None
+
+#         # Get the user's profile
+#         profile = instaloader.Profile.from_username(loader.context, username)
+
+#         # Iterate through stories to find the specific one with the extracted story_id
+#         for story in loader.get_stories(userids=[profile.userid]):
+#             for item in story.get_items():
+#                 if item.mediaid == int(story_id):  # Match the story ID
+#                     if item.is_video:
+#                         video_url = item.video_url
+#                         response = requests.get(video_url)
+#                         video_io = BytesIO(response.content)
+#                         return video_io, f"{username}_story_{item.date_utc}.mp4"
+#                     else:
+#                         print("The story is not a video.")
+#                         return None, None
+
+#     except Exception as e:
+#         print(f"Error downloading story: {e}")
+#         return None, None
+
+
+
+
+import instaloader
+import requests
+from io import BytesIO
+from urllib.parse import urlparse
+
+def download_instagram_story(url, ig_username, ig_password):
     # Create an instance of Instaloader
     loader = instaloader.Instaloader()
 
-    # Login to be able to download stories
+    # Login to Instagram
     try:
         loader.login(ig_username, ig_password)
     except Exception as e:
-        return {'error': f'Error logging in: {e}'}
+        print(f"Login failed: {e}")
+        return None, None
 
-    # Extract the username from the URL
-    match = re.search(r"instagram\.com/stories/([^/]+)/", story_url)
-    if match:
-        username = match.group(1)
-        print(f"Extracted username: {username}")
+    try:
+        # Extract the shortcode from the URL
+        parsed_url = urlparse(url)
+        path_parts = parsed_url.path.strip('/').split('/')
+        if len(path_parts) >= 2 and path_parts[0] == "stories":
+            username = path_parts[1]
+            story_id = path_parts[2]
+            print(f"Extracted username: {username}, story ID: {story_id}")
+        else:
+            print("Invalid URL structure. Could not extract username and story ID.")
+            return None, None
 
-        # Fetch the user's profile
-        try:
-            profile = instaloader.Profile.from_username(loader.context, username)
-        except Exception as e:
-            return {'error': f'Error fetching profile: {e}'}
+        # Get the user's profile
+        profile = instaloader.Profile.from_username(loader.context, username)
 
-        # Download the user's stories
-        try:
-            stories = loader.get_stories(userids=[profile.userid])
-            for story in stories:
-                for item in story.get_items():
-                    loader.download_storyitem(item, f"{username}_stories")
-            
-            return {'message': f'Stories downloaded successfully for user {username}'}
-        except Exception as e:
-            return {'error': f'Error downloading stories: {e}'}
-    else:
-        return {'error': 'Could not extract username from the provided URL.'}
+        # Iterate through stories to find the specific one with the extracted story_id
+        for story in loader.get_stories(userids=[profile.userid]):
+            for item in story.get_items():
+                if item.mediaid == int(story_id):  # Match the story ID
+                    if item.is_video:
+                        # Download video
+                        media_url = item.video_url
+                        extension = ".mp4"
+                    else:
+                        # Download image
+                        media_url = item.url
+                        extension = ".jpg"
+                    
+                    response = requests.get(media_url)
+                    media_io = BytesIO(response.content)
+                    return media_io, f"{username}_story_{item.date_utc}{extension}"
+
+    except Exception as e:
+        print(f"Error downloading story: {e}")
+        return None, None
