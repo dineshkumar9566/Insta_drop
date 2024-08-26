@@ -74,6 +74,8 @@ def download_video(request):
 
 
 
+def home(request):
+    return HttpResponse("Welcome to the Instagram Downloader!")
 
 
 # @api_view(['POST'])
