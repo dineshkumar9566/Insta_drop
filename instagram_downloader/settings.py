@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-g$d3ne+np3=5s%e7pm6k4323!1=6a0o$pr*9oj42e8r@@=20wq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -121,11 +121,12 @@ ALLOWED_HOSTS = [
     '127.0.0.1',        # Allows localhost
     'localhost',        # Allows localhost
     '192.168.1.16',     # Add this line to allow access from this IP address
-    'insta-drop-5.onrender.com',
+    'insta-drop-6.onrender.com',
     '.onrender.com'
 ]
 
 
+STATIC_URL = 'static/'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -161,7 +162,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
