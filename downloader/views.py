@@ -69,6 +69,12 @@ def download_video(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+from django.http import HttpResponse
+
+def home(request):
+    print("Home view reached!")
+    return HttpResponse("Welcome to the Instagram Downloader!")
+
 
 
 
