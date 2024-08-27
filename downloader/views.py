@@ -47,57 +47,26 @@ def download_post(request):
 #         return JsonResponse({'error': str(e)}, status=500)
 
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 @api_view(['POST'])
 def download_video(request):
     url = request.data.get('url')
     if not url:
         return JsonResponse({'error': 'URL parameter is required'}, status=400)
 
-    ig_username = 'ranjithignored1one@gmail.com'
-    ig_password = 'Instadrop@12345'
+    # Instagram credentials
+    ig_username = 'ranjithignored1one@gmail.com'  # Replace with your Instagram username
+    ig_password = 'Instadrop@12345'  # Replace with your Instagram password
 
     try:
-        logger.info(f"Attempting to download video from URL: {url}")
+        # Pass the URL, username, and password to the function
         video_io, filename = download_instagram_video(url, ig_username, ig_password)
         if video_io:
-            return FileResponse(video_io, as_attachment=True, filename=filename)
+            response = FileResponse(video_io, as_attachment=True, filename=filename)
+            return response
         else:
-            logger.error("Failed to download video or the post is not a video.")
             return JsonResponse({'error': 'Failed to download video or the post is not a video'}, status=500)
     except Exception as e:
-        logger.exception(f"Exception occurred: {str(e)}")
-        return JsonResponse({'error': f"Exception occurred: {str(e)}"}, status=500)
-
-
-
-def home(request):
-    return HttpResponse("Welcome to the Instagram Downloader!")
-
-
-# @api_view(['POST'])
-# def download_video(request):
-#     url = request.data.get('url')
-#     if not url:
-#         return JsonResponse({'error': 'URL parameter is required'}, status=400)
-
-#     # Instagram credentials
-#     ig_username = 'ranjithignored1one@gmail.com'  # Replace with your Instagram username
-#     ig_password = 'Instadrop@12345'  # Replace with your Instagram password
-
-#     try:
-#         # Pass the URL, username, and password to the function
-#         video_io, filename = download_instagram_video(url, ig_username, ig_password)
-#         if video_io:
-#             response = FileResponse(video_io, as_attachment=True, filename=filename)
-#             return response
-#         else:
-#             return JsonResponse({'error': 'Failed to download video or the post is not a video'}, status=500)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 

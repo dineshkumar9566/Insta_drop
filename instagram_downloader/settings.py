@@ -122,7 +122,10 @@ ALLOWED_HOSTS = [
     'localhost',        # Allows localhost
     '192.168.1.16',     # Add this line to allow access from this IP address
     'insta-drop-6.onrender.com',
-    '.onrender.com'
+    '.onrender.com',
+    '0.0.0.0',
+    'https://insta-drop-6.onrender.com/'
+
 ]
 
 
