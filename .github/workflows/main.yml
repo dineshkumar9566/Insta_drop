@@ -24,10 +24,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4  # This is already up to date
 
     - name: Setup Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4  # Update to the latest version
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
@@ -51,7 +51,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        name: django-artifact  # the name of the artifact
+        name: django-artifact
         path: staticfiles
 
   deploy:
