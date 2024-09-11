@@ -24,28 +24,60 @@ from io import BytesIO
 #     except Exception as e:
 #         return JsonResponse({'error': str(e)}, status=500)
 
+
+
+from django.http import JsonResponse, FileResponse
+from rest_framework.decorators import api_view
+from .download_instagram_post import download_instagram_post
+
 @api_view(['POST'])
 def download_post(request):
     url = request.data.get('url')
     if not url:
         return JsonResponse({'error': 'URL parameter is required'}, status=400)
 
-    # Instagram credentials
-    ig_username = 'ranjithignored1one@gmail.com'  # Replace with your Instagram username
-    ig_password = 'Instadrop@12345'  # Replace with your Instagram password
+    api_key = '3c73a65d8dmshbc735c3709ad35dp134760jsn985fc68fd40f'
+    api_host = 'instagram28.p.rapidapi.com'
 
     try:
-        # Pass the username and password as arguments to the function
-        img_io, filename = download_instagram_post(url, ig_username, ig_password)
+        img_io, filename = download_instagram_post(url, api_key, api_host)
         if img_io:
             response = FileResponse(img_io, as_attachment=True, filename=filename)
             return response
         else:
-            return JsonResponse({'error': 'Failed to download image'}, status=500)
+            return JsonResponse({'error': 'Access forbidden: Check your API key, host, or account status.'}, status=403)
     except Exception as e:
-        # Log the exception details
         print(f"Error occurred while downloading image: {str(e)}")
         return JsonResponse({'error': 'Failed to download image', 'details': str(e)}, status=500)
+
+
+
+
+
+
+
+# @api_view(['POST'])
+# def download_post(request):
+#     url = request.data.get('url')
+#     if not url:
+#         return JsonResponse({'error': 'URL parameter is required'}, status=400)
+
+#     # Instagram credentials
+#     ig_username = 'ranjithignored1one@gmail.com'  # Replace with your Instagram username
+#     ig_password = 'Instadrop@12345'  # Replace with your Instagram password
+
+#     try:
+#         # Pass the username and password as arguments to the function
+#         img_io, filename = download_instagram_post(url, ig_username, ig_password)
+#         if img_io:
+#             response = FileResponse(img_io, as_attachment=True, filename=filename)
+#             return response
+#         else:
+#             return JsonResponse({'error': 'Failed to download image'}, status=500)
+#     except Exception as e:
+#         # Log the exception details
+#         print(f"Error occurred while downloading image: {str(e)}")
+#         return JsonResponse({'error': 'Failed to download image', 'details': str(e)}, status=500)
 
 
 
